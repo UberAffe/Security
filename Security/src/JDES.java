@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-package jdes;
+
 
 /**
 
@@ -33,7 +33,6 @@ public class JDES
             // This generate a DES key based on your key
             String key = hexToASCII(argv[1]);
             System.out.println("My Key: " + key);
-            //key = Hex.toHexString(Integer.decodergv[1]);
             SecretKeyFactory keyfactory = SecretKeyFactory.getInstance("DES");
             DESKeySpec mydeskeyspec = new DESKeySpec(key.getBytes());
             SecretKey myDesKey = keyfactory.generateSecret(mydeskeyspec);
