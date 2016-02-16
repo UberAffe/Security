@@ -60,36 +60,42 @@ public class JDES
             String fileLocation = argv[5];
             File file = new File(fileLocation);
             Scanner scnr = new Scanner(file);
+            String line = scnr.nextLine();
+            boolean notDone = true;
             //start of loop
-            byte[] text = new byte[key.length()];
-            for(int i = 0; i < key.length() && scnr.hasNextByte(); i++)
-                text[i] = scnr.nextByte();
-            
-
-            System.out.println("Text [Hex Format] : " + new String(Hex.encode(text)) + " length = "+text.length);
-            System.out.println("Text : " + new String(text));
-            for(int i = 0; i < text.length; i++)
+            while(notDone)
             {
-                text[i] = (byte) (text[i] ^ iv[i]);
+                byte[] text = new byte[key.length()];
+                for(int i = 0; i < key.length(); i++)
+                    text[i] = (byte) line.charAt(i);
+
+
+                System.out.println("Text [Hex Format] : " + new String(Hex.encode(text)) + " length = "+text.length);
+                System.out.println("Text : " + new String(text));
+                for(int i = 0; i < text.length; i++)
+                {
+                    text[i] = (byte) (text[i] ^ iv[i]);
+                }
+
+
+                // Encrypt the text
+                byte[] textEncrypted = desCipher.doFinal(text);
+
+                System.out.println("Text Encryted : " + new String(Hex.encode(textEncrypted)));
+
+                // Initialize the same cipher for decryption
+                desCipher.init(Cipher.DECRYPT_MODE, myDesKey);
+
+                // Decrypt the text
+                byte[] textDecrypted = desCipher.doFinal(textEncrypted);
+                for(int i = 0; i < textDecrypted.length; i++)
+                {
+                    textDecrypted[i] = (byte) (textDecrypted[i] ^ iv[i]);
+                }
+                System.out.println("Text Decryted : " + new String(textDecrypted));
+                iv = text;
+                notDone = false;
             }
-
-
-            // Encrypt the text
-            byte[] textEncrypted = desCipher.doFinal(text);
-
-            System.out.println("Text Encryted : " + new String(Hex.encode(textEncrypted)));
-
-            // Initialize the same cipher for decryption
-            desCipher.init(Cipher.DECRYPT_MODE, myDesKey);
-
-            // Decrypt the text
-            byte[] textDecrypted = desCipher.doFinal(textEncrypted);
-            for(int i = 0; i < textDecrypted.length; i++)
-            {
-                textDecrypted[i] = (byte) (textDecrypted[i] ^ iv[i]);
-            }
-            System.out.println("Text Decryted : " + new String(textDecrypted));
-            iv = text;
             //End of Loop
         }
         catch(NoSuchAlgorithmException e){
