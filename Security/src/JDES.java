@@ -10,6 +10,9 @@
 
  @author tianb
  */
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -31,8 +34,7 @@ public class JDES
         try
         {
             // This generate a DES key based on your key
-            String key = hexToASCII(argv[1]);
-            System.out.println("My Key: " + key);
+            String key = hexToASCII(argv[3]);
             SecretKeyFactory keyfactory = SecretKeyFactory.getInstance("DES");
             DESKeySpec mydeskeyspec = new DESKeySpec(key.getBytes());
             SecretKey myDesKey = keyfactory.generateSecret(mydeskeyspec);
@@ -54,10 +56,23 @@ public class JDES
             desCipher.init(Cipher.ENCRYPT_MODE, myDesKey);
 
             //sensitive information
-            byte[] text = "12345678".getBytes();
+            byte[] iv = hexToASCII(argv[1]).getBytes();
+            String fileLocation = argv[5];
+            File file = new File(fileLocation);
+            Scanner scnr = new Scanner(file);
+            //start of loop
+            byte[] text = new byte[key.length()];
+            for(int i = 0; i < key.length() && scnr.hasNextByte(); i++)
+                text[i] = scnr.nextByte();
+            
 
             System.out.println("Text [Hex Format] : " + new String(Hex.encode(text)) + " length = "+text.length);
             System.out.println("Text : " + new String(text));
+            for(int i = 0; i < text.length; i++)
+            {
+                text[i] = (byte) (text[i] ^ iv[i]);
+            }
+
 
             // Encrypt the text
             byte[] textEncrypted = desCipher.doFinal(text);
@@ -69,6 +84,13 @@ public class JDES
 
             // Decrypt the text
             byte[] textDecrypted = desCipher.doFinal(textEncrypted);
+            for(int i = 0; i < textDecrypted.length; i++)
+            {
+                textDecrypted[i] = (byte) (textDecrypted[i] ^ iv[i]);
+            }
+            System.out.println("Text Decryted : " + new String(textDecrypted));
+            iv = text;
+            //End of Loop
         }
         catch(NoSuchAlgorithmException e){
             e.printStackTrace();
@@ -88,6 +110,9 @@ public class JDES
         catch(InvalidKeySpecException e){
             e.printStackTrace();
 	}
+        catch(FileNotFoundException e){
+            e.printStackTrace();
+        }
     }
 	
     public static byte [] hexStringToByteArray (final String s) 
